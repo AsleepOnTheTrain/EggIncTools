@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+<title>Stones Calculator</title>
+<style>
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+}
+
+.container {
+  width: 80%;
+  margin: 20px auto;
+}
+
+input[type="number"] {
+  width: 220px; /* Adjust if necessary */
+  padding: 8px;
+  margin-bottom: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+button {
+  font-family: 'Roboto', sans-serif;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px; /* Space between button and table */
+}
+
+th, td {
+  border: 1px solid #ddd; /* Light grey border */
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #333; /* Dark gray background */
+  color: white; /* White text */
+}
+
+tr:nth-child(odd) td {
+  background-color: #f2f2f2; /* Light gray for odd rows */
+}
+
+/* Optional: Styles for highlight class */
+.highlight {
+  background-color: #ffff99; /* Yellow, or any highlight color */
+}
+
+
+.highlight, .highlight td {
+  background-color: #ffff99 !important; /* Ensures highlight has priority */
+}
+ .input-group {
+  margin-bottom: 10px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+ 
+</style>
+</head>
+<body>
+<div class="container">
+	<div class="container">
+  <h1><img src="https://static.wikia.nocookie.net/egg-inc/images/2/23/Egg-inc-icon.jpg" width=32px /> Stones Calculator</h1>
+  <div class="input-group">
+    <label for="stoneSlots">Stone Slots:</label>
+    <input type="number" id="stoneSlots" placeholder="Stone Slots">
+  </div>
+  <div class="input-group">
+    <label for="chickensBillions">Chickens (billions):</label>
+    <input type="number" id="chickensBillions" placeholder="Chickens (billions - e.g., 14.175)">
+  </div>
+  <div class="input-group">
+    <label for="deflectorLaying"><img src="https://static.wikia.nocookie.net/egg-inc/images/2/28/Afx_tachyon_deflector_4.png" width=20px /> Deflector (Laying) %:</label>
+    <input type="number" id="deflectorLaying" placeholder="Deflector (Laying) %">
+  </div>
+  <div class="input-group">
+    <label for="metronomeLaying"><img src="https://static.wikia.nocookie.net/egg-inc/images/1/1e/Afx_quantum_metronome_4.png" width=20px /> Metronome (Laying) %:</label>
+    <input type="number" id="metronomeLaying" placeholder="Metronome (Laying) %">
+  </div>
+  <div class="input-group">
+    <label for="compassShipping"><img src="https://static.wikia.nocookie.net/egg-inc/images/1/17/Afx_interstellar_compass_4.png" width=20px /> Compass (Shipping) %:</label>
+    <input type="number" id="compassShipping" placeholder="Compass (Shipping) %">
+  </div>
+  <button onclick="updateValues()">Calculate</button>
+  </div>
+  <table id="resultsTable">
+    <thead>
+      <tr>
+        <th><img src="https://static.wikia.nocookie.net/egg-inc/images/c/cb/Afx_tachyon_stone_4.png" width=16px /> Tach Stones</th>
+        <th><img src="https://static.wikia.nocookie.net/egg-inc/images/d/da/Afx_quantum_stone_4.png" width=16px /> Quant Stones</th>
+        <th>Laying (q/hr)</th>
+        <th>Max Shipping (q/hr)</th>
+        <th>Actual Shipped (q/hr)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be added here by JavaScript -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+function calculateLaying(tachStones, deflectorLaying, chickensBillions, metronomeLaying) {
+  return (0.332654999321666 * Math.pow(1.05, tachStones) * (1 + deflectorLaying / 100) * chickensBillions * (1 + metronomeLaying / 100)).toFixed(3);
+}
+
+function calculateMaxShipping(quantStones, compassShipping) {
+  return (7.148 * Math.pow(1.05, quantStones) * (1 + compassShipping / 100)).toFixed(3);
+}
+
+function calculateActualShipped(laying, maxShipping) {
+  return Math.min(laying, maxShipping);
+}
+
+
+function updateValues() {
+  const stoneSlots = parseInt(document.getElementById('stoneSlots').value, 10);
+  const deflectorLaying = parseFloat(document.getElementById('deflectorLaying').value);
+  const chickensBillions = parseFloat(document.getElementById('chickensBillions').value);
+  const metronomeLaying = parseFloat(document.getElementById('metronomeLaying').value);
+  const compassShipping = parseFloat(document.getElementById('compassShipping').value);
+  
+  // Ensure the inputs are numbers and not NaN
+  if (isNaN(stoneSlots) || isNaN(deflectorLaying) || isNaN(chickensBillions) || isNaN(metronomeLaying) || isNaN(compassShipping)) {
+    alert("Please enter all the values correctly.");
+    return;
+  }
+  
+  let highestActualShipped = 0;
+  let highestActualShippedRow = null;
+  
+  const tbody = document.getElementById('resultsTable').querySelector('tbody');
+  tbody.innerHTML = ''; // Clear the table
+
+  for (let i = 0; i <= stoneSlots; i++) {
+    const tachStones = stoneSlots - i;
+    const quantStones = i;
+    const laying = calculateLaying(tachStones, deflectorLaying, chickensBillions, metronomeLaying);
+    const maxShipping = calculateMaxShipping(quantStones, compassShipping);
+	const actualShipped = calculateActualShipped(laying, maxShipping);
+
+    const row = tbody.insertRow();
+    row.insertCell(0).innerText = tachStones;
+    row.insertCell(1).innerText = quantStones;
+    row.insertCell(2).innerText = laying;
+    row.insertCell(3).innerText = maxShipping;
+    row.insertCell(4).innerText = actualShipped;
+    // Check if this is the highest actual shipped and save the row if it is
+    if (actualShipped > highestActualShipped) {
+      highestActualShipped = actualShipped;
+      if (highestActualShippedRow) {
+        highestActualShippedRow.classList.remove('highlight'); // Remove highlight from previous row
+      }
+      highestActualShippedRow = row; // Update to the new highest row
+    }
+  }
+  // Highlight the highest actual shipped row
+  if (highestActualShippedRow) {
+    highestActualShippedRow.classList.add('highlight');
+  }
+}
+</script>
+</body>
+</html>
